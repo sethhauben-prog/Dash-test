@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Dashboard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 2rem;
+    }
+
+    .dashboard {
+      width: 100%;
+      max-width: 720px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* ── Card base ── */
+    .card {
+      background: #1a1d27;
+      border: 1px solid #2d3148;
+      border-radius: 16px;
+      padding: 1.75rem 2rem;
+    }
+
+    .card-title {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #6b7280;
+      margin-bottom: 1rem;
+    }
+
+    /* ── Clock ── */
+    .clock-card {
+      text-align: center;
+      padding: 2.25rem 2rem;
+    }
+
+    #time {
+      font-size: clamp(3rem, 10vw, 5rem);
+      font-weight: 200;
+      letter-spacing: -0.02em;
+      color: #f8fafc;
+      line-height: 1;
+    }
+
+    #date {
+      margin-top: 0.5rem;
+      font-size: 1.05rem;
+      color: #94a3b8;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── To-do ── */
+    .todo-input-row {
+      display: flex;
+      gap: 0.6rem;
+      margin-bottom: 1rem;
+    }
+
+    .todo-input-row input {
+      flex: 1;
+      background: #0f1117;
+      border: 1px solid #2d3148;
+      border-radius: 10px;
+      padding: 0.6rem 0.9rem;
+      color: #e2e8f0;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .todo-input-row input:focus { border-color: #6366f1; }
+
+    .btn-add {
+      background: #6366f1;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 0.6rem 1.1rem;
+      font-size: 1.3rem;
+      cursor: pointer;
+      line-height: 1;
+      transition: background 0.15s;
+    }
+    .btn-add:hover { background: #4f46e5; }
+
+    .todo-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-height: 260px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #2d3148 transparent;
+    }
+
+    .todo-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: #0f1117;
+      border: 1px solid #2d3148;
+      border-radius: 10px;
+      padding: 0.55rem 0.85rem;
+      transition: opacity 0.15s, border-color 0.15s;
+      cursor: pointer;
+      user-select: none;
+    }
+    .todo-item:hover { border-color: #6366f1; }
+
+    .todo-item.done { opacity: 0.4; }
+    .todo-item.done .todo-text { text-decoration: line-through; }
+
+    .todo-check {
+      width: 18px;
+      height: 18px;
+      accent-color: #6366f1;
+      cursor: pointer;
+      flex-shrink: 0;
+      pointer-events: none;
+    }
+
+    .todo-text {
+      flex: 1;
+      font-size: 0.95rem;
+    }
+
+    .btn-del {
+      background: none;
+      border: none;
+      color: #4b5563;
+      font-size: 1rem;
+      cursor: pointer;
+      padding: 0 0.2rem;
+      transition: color 0.15s;
+      line-height: 1;
+    }
+    .btn-del:hover { color: #ef4444; }
+
+    .todo-empty {
+      text-align: center;
+      color: #4b5563;
+      font-size: 0.9rem;
+      padding: 1rem 0;
+    }
+
+    /* ── Quote ── */
+    .quote-card { text-align: center; }
+
+    .quote-text {
+      font-size: 1.1rem;
+      font-style: italic;
+      color: #cbd5e1;
+      line-height: 1.65;
+    }
+
+    .quote-author {
+      margin-top: 0.65rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #6366f1;
+    }
+
+    /* ── Links ── */
+    .links-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+    }
+
+    .link-item {
+      background: #0f1117;
+      border: 1px solid #2d3148;
+      border-radius: 12px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .link-item:hover { border-color: #6366f1; background: #13162080; }
+
+    .link-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #6b7280;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn-edit-link {
+      background: none;
+      border: none;
+      color: #4b5563;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: color 0.15s;
+      padding: 0;
+    }
+    .btn-edit-link:hover { color: #6366f1; }
+
+    .link-anchor {
+      color: #a5b4fc;
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: block;
+    }
+    .link-anchor:hover { color: #818cf8; text-decoration: underline; }
+
+    /* ── Edit modal ── */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      place-items: center;
+      z-index: 100;
+    }
+    .modal-backdrop.open { display: grid; }
+
+    .modal {
+      background: #1a1d27;
+      border: 1px solid #2d3148;
+      border-radius: 16px;
+      padding: 2rem;
+      width: 340px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+    }
+
+    .modal h3 { font-size: 1rem; color: #e2e8f0; }
+
+    .modal label { font-size: 0.8rem; color: #6b7280; display: block; margin-bottom: 0.25rem; }
+
+    .modal input {
+      width: 100%;
+      background: #0f1117;
+      border: 1px solid #2d3148;
+      border-radius: 8px;
+      padding: 0.55rem 0.8rem;
+      color: #e2e8f0;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .modal input:focus { border-color: #6366f1; }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.6rem;
+      margin-top: 0.4rem;
+    }
+
+    .btn-cancel {
+      background: #2d3148;
+      color: #94a3b8;
+      border: none;
+      border-radius: 8px;
+      padding: 0.55rem 1rem;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background 0.15s;
+    }
+    .btn-cancel:hover { background: #373d5e; }
+
+    .btn-save {
+      background: #6366f1;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.55rem 1.2rem;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: background 0.15s;
+    }
+    .btn-save:hover { background: #4f46e5; }
+  </style>
+</head>
+<body>
+
+<div class="dashboard">
+
+  <!-- Clock -->
+  <div class="card clock-card">
+    <div style="font-size: 3rem; line-height: 1; margin-bottom: 0.5rem;">😊</div>
+    <div id="time">00:00:00</div>
+    <div id="date">Loading…</div>
+  </div>
+
+  <!-- To-do -->
+  <div class="card">
+    <div class="card-title">To-Do</div>
+    <div class="todo-input-row">
+      <input type="text" id="todo-input" placeholder="Add a task…" />
+      <button class="btn-add" id="todo-add" title="Add task">+</button>
+    </div>
+    <ul class="todo-list" id="todo-list"></ul>
+  </div>
+
+  <!-- Quote -->
+  <div class="card quote-card">
+    <div class="card-title">Daily Motivation</div>
+    <p class="quote-text" id="quote-text"></p>
+    <p class="quote-author" id="quote-author"></p>
+  </div>
+
+  <!-- Links -->
+  <div class="card">
+    <div class="card-title">Quick Links</div>
+    <div class="links-grid" id="links-grid"></div>
+  </div>
+
+</div>
+
+<!-- Edit-link modal -->
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <h3>Edit Link</h3>
+    <div>
+      <label for="modal-label">Label</label>
+      <input type="text" id="modal-label" placeholder="e.g. GitHub" />
+    </div>
+    <div>
+      <label for="modal-url">URL</label>
+      <input type="url" id="modal-url" placeholder="https://…" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="modal-cancel">Cancel</button>
+      <button class="btn-save" id="modal-save">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ── Clock ── */
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('time').textContent =
+      now.toLocaleTimeString('en-US', { hour12: false });
+    document.getElementById('date').textContent =
+      now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  /* ── To-do ── */
+  let todos = JSON.parse(localStorage.getItem('dashboard-todos') || '[]');
+
+  function saveTodos() {
+    localStorage.setItem('dashboard-todos', JSON.stringify(todos));
+  }
+
+  function renderTodos() {
+    const list = document.getElementById('todo-list');
+    list.innerHTML = '';
+    if (todos.length === 0) {
+      list.innerHTML = '<li class="todo-empty">No tasks yet — add one above.</li>';
+      return;
+    }
+
+    // Show pending first, done at the bottom
+    const sorted = [
+      ...todos.map((t, i) => ({ ...t, i })).filter(t => !t.done),
+      ...todos.map((t, i) => ({ ...t, i })).filter(t => t.done),
+    ];
+
+    sorted.forEach(({ text, done, i }) => {
+      const li = document.createElement('li');
+      li.className = 'todo-item' + (done ? ' done' : '');
+
+      const check = document.createElement('input');
+      check.type = 'checkbox';
+      check.className = 'todo-check';
+      check.checked = done;
+
+      const span = document.createElement('span');
+      span.className = 'todo-text';
+      span.textContent = text;
+
+      const del = document.createElement('button');
+      del.className = 'btn-del';
+      del.title = 'Delete';
+      del.textContent = '✕';
+      del.addEventListener('click', e => {
+        e.stopPropagation();
+        todos.splice(i, 1);
+        saveTodos();
+        renderTodos();
+      });
+
+      li.addEventListener('click', () => {
+        todos[i].done = !todos[i].done;
+        saveTodos();
+        renderTodos();
+      });
+
+      li.append(check, span, del);
+      list.appendChild(li);
+    });
+  }
+
+  document.getElementById('todo-add').addEventListener('click', addTodo);
+  document.getElementById('todo-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addTodo();
+  });
+
+  function addTodo() {
+    const input = document.getElementById('todo-input');
+    const text = input.value.trim();
+    if (!text) return;
+    todos.push({ text, done: false });
+    saveTodos();
+    renderTodos();
+    input.value = '';
+    input.focus();
+  }
+
+  renderTodos();
+
+  /* ── Quote ── */
+  const QUOTES = [
+    { text: "The secret of getting ahead is getting started.", author: "Mark Twain" },
+    { text: "It does not matter how slowly you go as long as you do not stop.", author: "Confucius" },
+    { text: "Everything you've ever wanted is on the other side of fear.", author: "George Addair" },
+    { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill" },
+    { text: "Hardships often prepare ordinary people for an extraordinary destiny.", author: "C.S. Lewis" },
+    { text: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" },
+    { text: "Act as if what you do makes a difference. It does.", author: "William James" },
+    { text: "Start where you are. Use what you have. Do what you can.", author: "Arthur Ashe" },
+    { text: "You don't have to be great to start, but you have to start to be great.", author: "Zig Ziglar" },
+    { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+  ];
+
+  const q = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+  document.getElementById('quote-text').textContent = `"${q.text}"`;
+  document.getElementById('quote-author').textContent = `— ${q.author}`;
+
+  /* ── Links ── */
+  const DEFAULT_LINKS = [
+    { label: 'GitHub', url: 'https://github.com' },
+    { label: 'Gmail',  url: 'https://mail.google.com' },
+    { label: 'YouTube', url: 'https://youtube.com' },
+  ];
+
+  let links = JSON.parse(localStorage.getItem('dashboard-links') || 'null') || DEFAULT_LINKS;
+
+  function saveLinks() {
+    localStorage.setItem('dashboard-links', JSON.stringify(links));
+  }
+
+  function renderLinks() {
+    const grid = document.getElementById('links-grid');
+    grid.innerHTML = '';
+    links.forEach((link, i) => {
+      const item = document.createElement('div');
+      item.className = 'link-item';
+
+      const labelRow = document.createElement('div');
+      labelRow.className = 'link-label';
+      labelRow.textContent = link.label;
+
+      const editBtn = document.createElement('button');
+      editBtn.className = 'btn-edit-link';
+      editBtn.title = 'Edit';
+      editBtn.textContent = '✎';
+      editBtn.addEventListener('click', () => openModal(i));
+      labelRow.appendChild(editBtn);
+
+      const anchor = document.createElement('a');
+      anchor.className = 'link-anchor';
+      anchor.href = link.url;
+      anchor.target = '_blank';
+      anchor.rel = 'noopener noreferrer';
+      anchor.textContent = new URL(link.url).hostname.replace('www.', '');
+
+      item.append(labelRow, anchor);
+      grid.appendChild(item);
+    });
+  }
+
+  /* ── Modal ── */
+  let editingIndex = null;
+
+  function openModal(i) {
+    editingIndex = i;
+    document.getElementById('modal-label').value = links[i].label;
+    document.getElementById('modal-url').value = links[i].url;
+    document.getElementById('modal').classList.add('open');
+    document.getElementById('modal-label').focus();
+  }
+
+  function closeModal() {
+    document.getElementById('modal').classList.remove('open');
+    editingIndex = null;
+  }
+
+  document.getElementById('modal-cancel').addEventListener('click', closeModal);
+  document.getElementById('modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('modal')) closeModal();
+  });
+
+  document.getElementById('modal-save').addEventListener('click', () => {
+    const label = document.getElementById('modal-label').value.trim();
+    const url   = document.getElementById('modal-url').value.trim();
+    if (!label || !url) return;
+    try { new URL(url); } catch { alert('Please enter a valid URL (include https://).'); return; }
+    links[editingIndex] = { label, url };
+    saveLinks();
+    renderLinks();
+    closeModal();
+  });
+
+  renderLinks();
+</script>
+</body>
+</html>
